@@ -13,12 +13,24 @@ async function cd(path: string, key: string, extra: Record<string, string> = {})
   const url = new URL(`${BASE}/${path}`);
   url.searchParams.set("apikey", key);
   for (const [k, v] of Object.entries(extra)) url.searchParams.set(k, v);
-  const r = await fetch(url.toString());
-  const text = await r.text();
-  let json: any;
-  try { json = JSON.parse(text); } catch { json = { raw: text }; }
-  if (!r.ok) throw new Error(`CricketData ${path} ${r.status}: ${text.slice(0, 200)}`);
-  return json;
+
+  let lastErr: unknown = null;
+  for (let i = 0; i < 3; i++) {
+    try {
+      const r = await fetch(url.toString(), {
+        headers: { "Accept": "application/json", "User-Agent": "lovable-cricket/1.0" },
+      });
+      const text = await r.text();
+      let json: any;
+      try { json = JSON.parse(text); } catch { json = { raw: text }; }
+      if (!r.ok) throw new Error(`CricketData ${path} ${r.status}: ${text.slice(0, 200)}`);
+      return json;
+    } catch (e) {
+      lastErr = e;
+      await new Promise((res) => setTimeout(res, 300 * (i + 1)));
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
 }
 
 Deno.serve(async (req) => {
