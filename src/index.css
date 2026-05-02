@@ -36,7 +36,9 @@
 
     /* Neobrutalism palette */
     --nb-yellow: 48 100% 60%;
+    --nb-yellow-light: 48 100% 70%;
     --nb-red: 0 85% 58%;
+    --nb-red-dark: 0 85% 48%;
     --nb-blue: 220 90% 60%;
     --nb-green: 142 70% 48%;
     --nb-pink: 340 82% 72%;
@@ -47,6 +49,7 @@
     --shadow-brutal: 8px 8px 0 0 hsl(0 0% 6%);
     --shadow-brutal-sm: 4px 4px 0 0 hsl(0 0% 6%);
     --shadow-brutal-lg: 12px 12px 0 0 hsl(0 0% 6%);
+    --shadow-glow: 0 0 20px 0 hsl(var(--nb-yellow) / 0.5);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -89,6 +92,12 @@
   .nb-shadow-lg {
     box-shadow: var(--shadow-brutal-lg);
   }
+  .nb-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  .nb-glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
   .nb-card {
     @apply bg-card nb-border-thick nb-shadow rounded-sm;
   }
@@ -99,11 +108,37 @@
   .nb-tag {
     @apply inline-flex items-center px-2 py-0.5 nb-border bg-card text-xs font-bold uppercase tracking-wider;
   }
+  
+  .noise-bg {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 200px 200px;
+    opacity: 0.05;
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+  }
+
+  .text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(to right, hsl(var(--nb-red)), hsl(var(--nb-yellow)));
+  }
 }
 
 @layer utilities {
   .animate-shake {
     animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
   }
   
   @keyframes shake {
@@ -112,4 +147,31 @@
     30%, 50%, 70% { transform: translate3d(-8px, 4px, 0) rotate(-2deg); }
     40%, 60% { transform: translate3d(8px, -4px, 0) rotate(2deg); }
   }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 10px 0 hsl(var(--nb-yellow) / 0.3); }
+    50% { box-shadow: 0 0 30px 5px hsl(var(--nb-yellow) / 0.8); }
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+  border-left: 2px solid hsl(var(--border));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--foreground));
+  border: 2px solid hsl(var(--background));
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--nb-red));
 }

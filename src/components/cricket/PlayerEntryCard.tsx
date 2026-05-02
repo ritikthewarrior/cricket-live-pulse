@@ -51,10 +51,14 @@ export const PlayerEntryCard = ({ player, dismissed }: { player: Player; dismiss
         transition={{ type: "spring", stiffness: 200, damping: 20 }}
         className="nb-card p-5 relative overflow-hidden group cursor-pointer"
       >
-        {/* Holographic foil glare */}
+        {/* Holographic foil glare with more pronounced rainbow gradient */}
         <motion.div
-          className="pointer-events-none absolute inset-0 z-50 opacity-0 transition-opacity duration-300 group-hover:opacity-100 mix-blend-overlay"
-          style={{ background }}
+          className="pointer-events-none absolute inset-0 z-50 opacity-0 transition-opacity duration-300 group-hover:opacity-100 mix-blend-color-dodge"
+          style={{ 
+            background,
+            backgroundImage: `linear-gradient(105deg, transparent 20%, rgba(255, 255, 255, 0.4) 25%, rgba(255, 255, 255, 0.6) 28%, transparent 32%), 
+                              linear-gradient(to right, rgba(255, 0, 0, 0.1), rgba(255, 255, 0, 0.1), rgba(0, 255, 0, 0.1), rgba(0, 255, 255, 0.1), rgba(0, 0, 255, 0.1), rgba(255, 0, 255, 0.1))`
+          }}
         />
 
         {/* Content wrapper with Z-translation for parallax */}
@@ -120,25 +124,13 @@ export const PlayerEntryCard = ({ player, dismissed }: { player: Player; dismiss
             </div>
           </div>
 
-          {/* AI Prediction */}
-          <div className="mt-5 nb-border-thick bg-foreground text-background p-4 nb-shadow-sm transition-transform hover:scale-[1.02]">
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-display text-lg">🤖 AI PREDICTION</span>
-              <span className={`nb-tag ${riskColor} border-background`}>
-                {player.prediction.risk} RISK
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="nb-border border-background p-2">
-                <div className="text-[10px] font-bold uppercase opacity-70">Expected Runs</div>
-                <div className="font-display text-2xl">
-                  {player.prediction.expectedRunsMin}–{player.prediction.expectedRunsMax}
-                </div>
-              </div>
-              <div className="nb-border border-background p-2">
-                <div className="text-[10px] font-bold uppercase opacity-70">Boundary Prob</div>
-                <div className="font-display text-2xl">{player.prediction.boundaryProb}%</div>
-              </div>
+          {/* Comparison section vs Dismissed player */}
+          <div className="mt-5 pt-5 border-t-2 border-black/10 relative z-10">
+            <h4 className="text-[10px] font-bold uppercase text-center opacity-50 tracking-widest mb-3">Replacement Comparison</h4>
+            <div className="space-y-1">
+              <CompareRow label="AVG" a={player.battingAvg} b={dismissed.battingAvg} />
+              <CompareRow label="SR" a={player.strikeRate} b={dismissed.strikeRate} />
+              <CompareRow label="BOUNDARY %" a={player.boundaryPct} b={dismissed.boundaryPct} />
             </div>
           </div>
         </div>

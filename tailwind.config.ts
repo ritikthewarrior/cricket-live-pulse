@@ -20,7 +20,9 @@ export default {
       colors: {
         nb: {
           yellow: "hsl(var(--nb-yellow))",
+          "yellow-light": "hsl(var(--nb-yellow-light))",
           red: "hsl(var(--nb-red))",
+          "red-dark": "hsl(var(--nb-red-dark))",
           blue: "hsl(var(--nb-blue))",
           green: "hsl(var(--nb-green))",
           pink: "hsl(var(--nb-pink))",
