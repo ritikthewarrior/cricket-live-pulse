@@ -100,3 +100,16 @@
     @apply inline-flex items-center px-2 py-0.5 nb-border bg-card text-xs font-bold uppercase tracking-wider;
   }
 }
+
+@layer utilities {
+  .animate-shake {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  }
+  
+  @keyframes shake {
+    10%, 90% { transform: translate3d(-2px, 2px, 0) rotate(-1deg); }
+    20%, 80% { transform: translate3d(4px, -2px, 0) rotate(1deg); }
+    30%, 50%, 70% { transform: translate3d(-8px, 4px, 0) rotate(-2deg); }
+    40%, 60% { transform: translate3d(8px, -4px, 0) rotate(2deg); }
+  }
+}

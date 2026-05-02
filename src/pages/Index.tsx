@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { INITIAL_MATCH, MatchState, PLAYERS, Player } from "@/lib/cricket-data";
 import { Scoreboard } from "@/components/cricket/Scoreboard";
 import { MomentumBar } from "@/components/cricket/MomentumBar";
@@ -16,6 +18,8 @@ const Index = () => {
   ]);
   const [notifs, setNotifs] = useState<Notif[]>([]);
   const [wicketActive, setWicketActive] = useState(false);
+  const [boundaryEvent, setBoundaryEvent] = useState<{runs: number, text: string} | null>(null);
+  const [shake, setShake] = useState(false);
   const [dismissedPlayer, setDismissedPlayer] = useState<Player | null>(null);
   const [newPlayer, setNewPlayer] = useState<Player | null>(null);
   const eventIdRef = useRef(100);
@@ -46,7 +50,10 @@ const Index = () => {
           const next = remaining[Math.floor(Math.random() * remaining.length)] || PLAYERS[2];
           setDismissedPlayer(dismissed);
           setNewPlayer(next);
+          setNewPlayer(next);
           setWicketActive(true);
+          setShake(true);
+          setTimeout(() => setShake(false), 500);
           pushEvent({ over: nextOver(m.overs), text: `WICKET! ${dismissed.name} caught at mid-off.`, type: "wicket" });
           pushNotif({ text: `🚨 WICKET! ${dismissed.name} departs.`, tone: "alert" });
           return {
@@ -61,11 +68,17 @@ const Index = () => {
           runs = 4;
           evType = "boundary";
           text = "FOUR! Cracked through the covers.";
+          setBoundaryEvent({ runs, text });
+          setTimeout(() => setBoundaryEvent(null), 2500);
         } else if (roll < 0.28) {
           runs = 6;
           evType = "boundary";
           text = "SIX! Launched over long-on!";
           pushNotif({ text: "💥 MAXIMUM! Huge hit!", tone: "success" });
+          setBoundaryEvent({ runs, text });
+          setShake(true);
+          setTimeout(() => setShake(false), 500);
+          setTimeout(() => setBoundaryEvent(null), 2500);
         } else if (roll < 0.55) {
           runs = 1;
           text = "Single taken.";
@@ -94,7 +107,7 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen bg-background overflow-x-hidden ${shake ? "animate-shake" : ""}`}>
       {/* Top ticker */}
       <div className="bg-foreground text-background nb-border-thick border-x-0 border-t-0 overflow-hidden">
         <div className="flex animate-ticker whitespace-nowrap py-2 font-display text-sm">
@@ -156,12 +169,9 @@ const Index = () => {
               >
                 FORCE WICKET
               </button>
-              <button
-                onClick={() => pushNotif({ text: "📢 Subscribed to alerts!", tone: "info" })}
-                className="nb-border-thick bg-card py-2 font-display text-sm nb-shadow-sm nb-hover"
-              >
-                ALERTS ON
-              </button>
+              <Link to="/lobby" className="nb-border-thick bg-nb-blue text-white py-2 font-display text-sm nb-shadow-sm nb-hover text-center leading-loose">
+                PLAY WITH FRIENDS
+              </Link>
             </div>
           </div>
         </aside>
@@ -170,6 +180,31 @@ const Index = () => {
       {wicketActive && dismissedPlayer && (
         <WicketBanner playerName={dismissedPlayer.name} onClose={() => setWicketActive(false)} />
       )}
+
+      {/* Cinematic Boundary Overlay */}
+      <AnimatePresence>
+        {boundaryEvent && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.2 }}
+            className={`fixed inset-0 z-50 flex items-center justify-center mix-blend-exclusion pointer-events-none ${
+              boundaryEvent.runs === 6 ? 'bg-nb-yellow' : 'bg-nb-blue'
+            }`}
+          >
+            <motion.h1 
+              initial={{ x: -1000, skewX: 45 }}
+              animate={{ x: 0, skewX: 0 }}
+              exit={{ x: 1000, skewX: -45 }}
+              transition={{ type: "spring", damping: 12, mass: 0.5 }}
+              className="font-display text-[15vw] md:text-[20vw] leading-none uppercase text-white drop-shadow-lg"
+            >
+              {boundaryEvent.runs === 6 ? "SIX!" : "FOUR!"}
+            </motion.h1>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Notifications items={notifs} />
     </div>
   );
