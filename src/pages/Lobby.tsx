@@ -53,9 +53,14 @@ const Lobby = () => {
           </button>
         </form>
 
-        <Link to="/" className="block mt-4 text-sm underline hover:text-nb-red">
-          Back to Dashboard
-        </Link>
+        <div className="flex justify-between items-center mt-4">
+          <Link to="/" className="text-sm underline hover:text-nb-red">
+            Back to Dashboard
+          </Link>
+          <Link to="/leaderboard" className="text-sm font-bold underline text-nb-blue hover:text-nb-pink flex items-center gap-1">
+            <span>🏆</span> Global Leaderboard
+          </Link>
+        </div>
       </div>
     </div>
   );

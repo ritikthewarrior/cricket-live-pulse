@@ -4,6 +4,9 @@ import { PLAYERS, Player } from "@/lib/cricket-data";
 import { useMatchmaking } from "@/hooks/useMatchmaking";
 import { calculateTurnOutcome, Phase } from "@/lib/gameEngine";
 import { motion, AnimatePresence } from "framer-motion";
+import { useGameAudio } from "@/hooks/useGameAudio";
+import Confetti from "react-confetti";
+import { useWindowSize } from "react-use";
 
 const Game = () => {
   const [searchParams] = useSearchParams();
@@ -15,6 +18,11 @@ const Game = () => {
   const [gameOver, setGameOver] = useState(false);
   const [freeHitActive, setFreeHitActive] = useState(false);
   const [freeHitUsed, setFreeHitUsed] = useState(false);
+  const [shake, setShake] = useState(false);
+  const [boundaryEvent, setBoundaryEvent] = useState<{runs: number, text: string} | null>(null);
+  
+  const { width, height } = useWindowSize();
+  useGameAudio(gameState.turnResult, gameOver);
 
   useEffect(() => {
     // Deal 5 random players to hand
@@ -40,6 +48,19 @@ const Game = () => {
     // Sync to network
     await playCardSync(card, outcome);
 
+    // Handle cinematic effects
+    if (outcome.runs >= 4) {
+      setBoundaryEvent({ runs: outcome.runs, text: outcome.message });
+      if (outcome.runs === 6) {
+        setShake(true);
+        setTimeout(() => setShake(false), 500);
+      }
+      setTimeout(() => setBoundaryEvent(null), 2500);
+    } else if (outcome.isWicket) {
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+    }
+
     // Remove played card and draw new after a delay
     setTimeout(() => {
       setHand(prev => {
@@ -55,8 +76,14 @@ const Game = () => {
   const myScore = isPlayer1 ? gameState.player1Score : gameState.player2Score;
   const oppScore = isPlayer1 ? gameState.player2Score : gameState.player1Score;
 
+  const pitchThemes: Record<string, string> = {
+    FLAT: "bg-[#FFF9E6]", // Soft sunny yellow
+    DUSTY: "bg-[#F5F2EA]", // Earthy cream
+    GREEN: "bg-[#F2F9F2]", // Pale grass green
+  };
+
   return (
-    <div className="min-h-screen bg-background flex flex-col overflow-hidden">
+    <div className={`min-h-screen bg-background flex flex-col overflow-hidden ${shake ? "animate-shake" : ""}`}>
       <header className="p-4 border-b-4 border-black bg-foreground text-background flex justify-between items-center z-10">
         <div>
           <h1 className="font-display text-2xl tracking-widest">ROOM: {roomCode}</h1>
@@ -70,7 +97,8 @@ const Game = () => {
         <Link to="/lobby" className="nb-tag bg-nb-red">LEAVE GAME</Link>
       </header>
 
-      <main className="flex-1 p-6 flex flex-col justify-between relative">
+      <main className={`flex-1 p-6 flex flex-col justify-between relative transition-colors duration-1000 ${pitchThemes[gameState.pitch] || 'bg-background'}`}>
+        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
         {/* Opponent Area */}
         <div className="flex justify-between items-center z-10">
           <div className="text-left">
@@ -174,6 +202,30 @@ const Game = () => {
           </div>
         </div>
 
+        {/* Cinematic Boundary Overlay */}
+        <AnimatePresence>
+          {boundaryEvent && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.2 }}
+              className={`fixed inset-0 z-50 flex items-center justify-center mix-blend-exclusion pointer-events-none ${
+                boundaryEvent.runs === 6 ? 'bg-nb-yellow' : 'bg-nb-blue'
+              }`}
+            >
+              <motion.h1 
+                initial={{ x: -1000, skewX: 45 }}
+                animate={{ x: 0, skewX: 0 }}
+                exit={{ x: 1000, skewX: -45 }}
+                transition={{ type: "spring", damping: 12, mass: 0.5 }}
+                className="font-display text-[15vw] md:text-[20vw] leading-none uppercase text-white drop-shadow-lg"
+              >
+                {boundaryEvent.runs === 6 ? "SIX!" : "FOUR!"}
+              </motion.h1>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Match Summary Overlay */}
         <AnimatePresence>
           {gameOver && (
@@ -183,6 +235,7 @@ const Game = () => {
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
             >
+              {myScore > oppScore && <Confetti width={width} height={height} numberOfPieces={500} recycle={false} gravity={0.15} />}
               <motion.div 
                 initial={{ scale: 0.9, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
