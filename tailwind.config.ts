@@ -13,7 +13,19 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+        display: ['"Archivo Black"', 'sans-serif'],
+      },
       colors: {
+        nb: {
+          yellow: "hsl(var(--nb-yellow))",
+          red: "hsl(var(--nb-red))",
+          blue: "hsl(var(--nb-blue))",
+          green: "hsl(var(--nb-green))",
+          pink: "hsl(var(--nb-pink))",
+          cream: "hsl(var(--nb-cream))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -64,26 +76,39 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
-        "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+        "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },
+        "accordion-up": { from: { height: "var(--radix-accordion-content-height)" }, to: { height: "0" } },
+        "pop-in": {
+          "0%": { transform: "scale(0.3) rotate(-12deg)", opacity: "0" },
+          "60%": { transform: "scale(1.15) rotate(4deg)", opacity: "1" },
+          "100%": { transform: "scale(1) rotate(-2deg)", opacity: "1" },
         },
-        "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+        "slide-up": {
+          "0%": { transform: "translateY(40px)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
+        "shake": {
+          "0%, 100%": { transform: "translateX(0) rotate(-2deg)" },
+          "25%": { transform: "translateX(-6px) rotate(-3deg)" },
+          "75%": { transform: "translateX(6px) rotate(-1deg)" },
+        },
+        "pulse-bold": {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.05)" },
+        },
+        "ticker": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pop-in": "pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "slide-up": "slide-up 0.4s ease-out",
+        "shake": "shake 0.5s ease-in-out infinite",
+        "pulse-bold": "pulse-bold 1.2s ease-in-out infinite",
+        "ticker": "ticker 30s linear infinite",
       },
     },
   },
